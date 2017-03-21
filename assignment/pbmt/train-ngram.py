@@ -10,6 +10,7 @@ count2 = defaultdict(lambda: 0.0)
 with open(sys.argv[1], "r") as infile:
   for line in infile:
     vals = line.strip().split() + ["</s>"]
+    #print (vals)
     ctxt = "<s>"
     for val in vals:
       ctxts1 += 1
@@ -36,6 +37,7 @@ with open(sys.argv[2], "w") as outfile:
   # Print the unigrams
   for word, val in count1.items():
     v1 = val/ctxts1
+    #print("v1 and val and ctxt1", v1, val, ctxts1)
     print("%d %d %s %s %.4f" % (stateid[""], stateid[word], word, word, -math.log(v1)), file=outfile)
   print("%d %d <unk> <unk> %.4f" % (stateid[""], stateid[""], -math.log(PROB_UNK)), file=outfile)
   
