@@ -1,82 +1,71 @@
-from __future__ import print_function
 import sys
-import math
-from collections import defaultdict
+def main():
+  inpf = sys.argv[1]
+  outf = sys.argv[2]
+  initial_state = 0
+  next_state = 1
+  cache = dict()
+  with open(inpf) as phrases:
+    with open(outf, "w") as output:
+      src_words = set()
+      tgt_words = set()
+      for line in phrases:
+        if len(line) > 1:
+          parts = line.split("\t")
+          f = parts[0].split(" ")
+          e = parts[1].split(" ")
+          src_words |= set(f)
+          tgt_words |= set(e)
+          cost = float(parts[2])
+          if len(e) < len(f):
+            cost += 0.05*(len(f) - len(e)) # deal with brevity penalty
 
-import os, codecs
+          if len(f) == 1 and len(e) == 1:
+            output.write("%d %d %s %s %.4f\n" % (initial_state, initial_state, f[0], e[0], cost))
+            continue
 
-print(os.path)
+          last_state = initial_state
+          sofar = ""
+          for wordf in f:
+            if (sofar + wordf + " ") not in cache: 
+              if sofar in cache:
+                last_state = cache[sofar]
+              output.write("%d %d %s %s\n" % (last_state, next_state, wordf, "<eps>"))
+              sofar += wordf + " "
+              cache[sofar] = next_state
+              last_state = next_state
+              next_state += 1
+            else:
+              sofar += wordf + " "
+          
+          for worde in e:
+            if (sofar + worde + "~") not in cache: 
+              if sofar in cache:
+                last_state = cache[sofar]
+              
+              output.write("%d %d %s %s\n" % (last_state, next_state, "<eps>", worde))
+              sofar += worde + "~"
+              cache[sofar] = next_state
+              last_state = next_state
+              next_state += 1
+            else:
+              sofar += worde + "~"
+          
+          if sofar in cache:
+            last_state = cache[sofar]
 
-def main(argv):
-	ctxts1 = 0.0  # total word count
-	ctxts2 = defaultdict(lambda: 0.0)  # bigram denominator count
-	count1 = defaultdict(lambda: 0.0)  # unigram count
-	count2 = defaultdict(lambda: 0.0)  # bigram count
-	stateid = defaultdict(lambda: len(stateid))
-
-	outfile = open(sys.argv[2], "w")
-
-	with open(sys.argv[1], "r") as infile:
-	    for line in infile:
-		item = line.strip().split("\t")
-		print (item)
-		src = item[0].strip().split("\t")
-		#print (src) 
-		tgt = item[1].strip().split("\t")
-		#print (tgt)
-		logProb = item[2]
-
-		vals = line.strip().split("\t") + ["</s>"]
-		ctxt = "<s>"
-
-		for idx, val in enumerate(src + tgt):
-		    text = src + tgt
-		    if idx > 0:
-			prev_state = ctxt + " ".join(text[:idx])
-		    else:
-			prev_state = ctxt
-
-		    next_state = ctxt + " ".join(text[:(idx + 1)])
-		    if idx <= len(src):
-			prev_label = False
-		    else:
-			prev_label = True
-		    if idx <= (len(src) - 1):
-			next_label = False
-		    else:
-			next_label = True
-
-		    if prev_label:
-			cut_position=len(src)
-		    else:
-			cut_position = 0
-		    prev_state=(prev_state,prev_label,cut_position)
-
-		    if next_label:
-			cut_position=len(src)
-		    else:
-			cut_position = 0
-		    next_state=(next_state,next_label,cut_position)
-
-		    if not prev_state in stateid or not next_state in stateid:
-			if idx < len(src):
-			    print("%d %d %s <eps>" % (stateid[prev_state], stateid[next_state], val), file=outfile)
-			else:
-			    print("%d %d <eps> %s" % (stateid[prev_state], stateid[next_state], val), file=outfile)
-		    last_stateid = stateid[next_state]
-		    if not prev_state in stateid or not next_state in stateid:
-			if idx < len(src):
-			    print("%d %d %s <eps>" % (stateid[prev_state], stateid[next_state], val), file=outfile)
-			else:
-			    print("%d %d <eps> %s" % (stateid[prev_state], stateid[next_state], val), file=outfile)
-		    last_stateid = stateid[next_state]
+          output.write("%d %d <eps> <eps> %.4f\n" % (last_state, initial_state, cost))
 
 
-		print("%d 0 <eps> <eps> %s" % (last_stateid, logProb), file=outfile)
+      # allow words that can't be processed to become UNK
+      INSERT_DELETE_COST = 15
+      for src in src_words:
+        output.write("0 0 %s <unk> %.4f\n" % (src, INSERT_DELETE_COST))
 
-	    print("0 0 </s> </s>", file=outfile)
-	    print("0 0 <unk> <unk>", file=outfile)
-	    print("0", file=outfile)
+      output.write("0 0 </s> </s>\n")
+      output.write("0 0 <unk> <unk>\n")
 
-if __name__ == "__main__":
-	main(sys.argv)
+      output.write("0\n")
+
+
+main()
