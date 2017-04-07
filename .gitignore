@@ -2,7 +2,12 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+experiment/
+assignment/back/
+output-0406/
+output-0328/
+output/
+en-de/
 # C extensions
 *.so
 
@@ -23,7 +28,6 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
-
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.

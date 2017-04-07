@@ -17,7 +17,7 @@ mkdir -p $OUT_DIR
 #python $SCRIPT_DIR/train-model1.py $TRAIN_DATA.de $TRAIN_DATA.en $OUT_DIR/alignment.txt
 
 # *** Implement 2: Extract and score phrases
-#python $SCRIPT_DIR/phrase-extract.py $TRAIN_DATA.de $TRAIN_DATA.en $OUT_DIR/alignment.txt $OUT_DIR/phrase.txt
+python $SCRIPT_DIR/phrase-extract.py $TRAIN_DATA.de $TRAIN_DATA.en $OUT_DIR/alignment.txt $OUT_DIR/phrase.txt 3
 
 # *** Implement 3: Create WFSTs for phrases
 python $SCRIPT_DIR/create-phrase-fst.py $OUT_DIR/phrase.txt $OUT_DIR/phrase-fst.txt
